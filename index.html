@@ -317,6 +317,49 @@
       to { background-position: 12% 30%, 66% 34%, 48% 60%; }
     }
 
+    .music {
+      position: fixed;
+      right: max(20px, env(safe-area-inset-right));
+      bottom: max(20px, env(safe-area-inset-bottom));
+      z-index: 10;
+      width: min(320px, calc(100vw - 40px));
+      display: grid;
+      justify-items: end;
+      gap: 10px;
+    }
+
+    .music-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 46px;
+      padding: 11px 18px;
+      border: 1px solid rgba(204, 232, 255, 0.4);
+      border-radius: 999px;
+      background: rgba(17, 22, 45, 0.88);
+      color: #f5efff;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 0 28px rgba(139, 203, 255, 0.12);
+    }
+
+    .music-toggle:hover { background: rgba(38, 40, 70, 0.95); }
+    .music-toggle:focus-visible {
+      outline: 2px solid #afe7ff;
+      outline-offset: 4px;
+    }
+
+    .music-player {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      pointer-events: none;
+    }
+
     @media (max-width: 720px) {
       :root {
         --cube: min(48vmin, 280px);
@@ -332,6 +375,7 @@
       .shadow {
         margin-top: 62vmin;
       }
+
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -376,7 +420,51 @@
     </section>
   </main>
 
+  <aside class="music" aria-label="音乐播放器">
+    <div class="music-player" id="music-player" aria-hidden="true"></div>
+    <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="播放单依纯《李白》" aria-controls="music-player">
+      <span aria-hidden="true">♫</span><span id="music-label">播放音乐 · 李白</span>
+    </button>
+  </aside>
+
   <script>
+    const musicToggle = document.querySelector("#music-toggle");
+    const musicPlayer = document.querySelector("#music-player");
+    const musicLabel = document.querySelector("#music-label");
+
+    function closeMusic() {
+      musicPlayer.replaceChildren();
+      musicToggle.setAttribute("aria-pressed", "false");
+      musicToggle.setAttribute("aria-label", "播放单依纯《李白》");
+      musicLabel.textContent = "播放音乐 · 李白";
+    }
+
+    musicToggle.addEventListener("click", () => {
+      if (musicPlayer.childElementCount > 0) {
+        closeMusic();
+        return;
+      }
+
+      const player = document.createElement("iframe");
+      player.title = "单依纯《李白 (Live)》官方音乐播放器";
+      player.src = "https://player.bilibili.com/player.html?bvid=BV1DyTgzmEmz&p=1&autoplay=1&muted=0&danmaku=0&poster=1";
+      player.allow = "autoplay; encrypted-media";
+      player.referrerPolicy = "strict-origin-when-cross-origin";
+      player.tabIndex = -1;
+      player.setAttribute("aria-hidden", "true");
+      musicPlayer.replaceChildren(player);
+      musicToggle.setAttribute("aria-pressed", "true");
+      musicToggle.setAttribute("aria-label", "关闭音乐");
+      musicLabel.textContent = "关闭音乐";
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && musicPlayer.childElementCount > 0) {
+        closeMusic();
+        musicToggle.focus();
+      }
+    });
+
     const canvas = document.querySelector("#particles");
     const ctx = canvas.getContext("2d");
     const photoUrls = Array.from({ length: 12 }, (_, index) => {
