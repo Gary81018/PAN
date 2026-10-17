@@ -1,2 +1,26 @@
 # PAN
-PAN 照片星河立方体 · 基于 YUN，使用 12 张照片
+
+基于 [YUN](https://github.com/Gary81018/YUN) 制作的照片星河立方体，使用 12 张 PAN 照片。
+
+## 效果
+
+- 星空粒子背景、双层立方体自动旋转。
+- 鼠标悬停时外层展开，显示内层照片。
+- 每次打开随机排列 12 张照片，内外各 6 张，不重复、不遗漏。
+- 保留 YUN 的桌面与移动端自适应布局。
+
+## 本地预览
+
+直接用浏览器打开 `index.html`，或在项目目录运行：
+
+```sh
+python3 -m http.server 8000
+```
+
+访问 `http://localhost:8000`。
+
+## 照片与部署
+
+照片位于 `web-assets/pan-01.jpg` 至 `pan-12.jpg`，由原始 HEIC 转换为兼容浏览器的 JPEG。
+
+GitHub Pages 使用 `.github/workflows/pages.yml`，推送到 `main` 后自动部署。

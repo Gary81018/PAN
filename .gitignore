@@ -1,0 +1,9 @@
+*
+!index.html
+!web-assets/
+!web-assets/*.jpg
+!.github/
+!.github/workflows/
+!.github/workflows/pages.yml
+!.gitignore
+!README.md
