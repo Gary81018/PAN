@@ -351,13 +351,12 @@
       outline-offset: 4px;
     }
 
-    .music-player {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      pointer-events: none;
+    .music-status {
+      margin: 0;
+      max-width: 260px;
+      color: #e6d8ed;
+      font-size: 12px;
+      text-align: right;
     }
 
     @media (max-width: 720px) {
@@ -421,46 +420,60 @@
   </main>
 
   <aside class="music" aria-label="音乐播放器">
-    <div class="music-player" id="music-player" aria-hidden="true"></div>
-    <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="播放单依纯《李白》" aria-controls="music-player">
+    <audio id="music-audio" src="./web-assets/li-bai.m4a" loop preload="none"></audio>
+    <p class="music-status" id="music-status" role="status"></p>
+    <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="播放单依纯《李白》" aria-controls="music-audio">
       <span aria-hidden="true">♫</span><span id="music-label">播放音乐 · 李白</span>
     </button>
   </aside>
 
   <script>
     const musicToggle = document.querySelector("#music-toggle");
-    const musicPlayer = document.querySelector("#music-player");
+    const musicAudio = document.querySelector("#music-audio");
     const musicLabel = document.querySelector("#music-label");
+    const musicStatus = document.querySelector("#music-status");
+    musicAudio.volume = 0.6;
 
-    function closeMusic() {
-      musicPlayer.replaceChildren();
-      musicToggle.setAttribute("aria-pressed", "false");
-      musicToggle.setAttribute("aria-label", "播放单依纯《李白》");
-      musicLabel.textContent = "播放音乐 · 李白";
+    function updateMusicButton(playing) {
+      musicToggle.setAttribute("aria-pressed", String(playing));
+      musicToggle.setAttribute("aria-label", playing ? "暂停音乐" : "播放单依纯《李白》");
+      musicLabel.textContent = playing ? "暂停音乐" : "播放音乐 · 李白";
     }
 
-    musicToggle.addEventListener("click", () => {
-      if (musicPlayer.childElementCount > 0) {
-        closeMusic();
+    function showMusicError() {
+      musicAudio.pause();
+      updateMusicButton(false);
+      musicStatus.textContent = "音频暂时无法播放，请稍后重试。";
+    }
+
+    musicAudio.addEventListener("playing", () => {
+      musicStatus.textContent = "";
+      updateMusicButton(true);
+    });
+    musicAudio.addEventListener("pause", () => updateMusicButton(false));
+    musicAudio.addEventListener("waiting", () => {
+      musicLabel.textContent = "音乐加载中…";
+    });
+    musicAudio.addEventListener("error", showMusicError);
+
+    musicToggle.addEventListener("click", async () => {
+      if (!musicAudio.paused) {
+        musicAudio.pause();
         return;
       }
 
-      const player = document.createElement("iframe");
-      player.title = "单依纯《李白 (Live)》官方音乐播放器";
-      player.src = "https://player.bilibili.com/player.html?bvid=BV1DyTgzmEmz&p=1&autoplay=1&muted=0&danmaku=0&poster=1";
-      player.allow = "autoplay; encrypted-media";
-      player.referrerPolicy = "strict-origin-when-cross-origin";
-      player.tabIndex = -1;
-      player.setAttribute("aria-hidden", "true");
-      musicPlayer.replaceChildren(player);
-      musicToggle.setAttribute("aria-pressed", "true");
-      musicToggle.setAttribute("aria-label", "关闭音乐");
-      musicLabel.textContent = "关闭音乐";
+      musicStatus.textContent = "";
+      if (musicAudio.error) musicAudio.load();
+      try {
+        await musicAudio.play();
+      } catch (error) {
+        if (error.name !== "AbortError") showMusicError();
+      }
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && musicPlayer.childElementCount > 0) {
-        closeMusic();
+      if (event.key === "Escape" && !musicAudio.paused) {
+        musicAudio.pause();
         musicToggle.focus();
       }
     });

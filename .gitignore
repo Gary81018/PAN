@@ -2,6 +2,8 @@
 !index.html
 !web-assets/
 !web-assets/*.jpg
+!web-assets/*.mp3
+!web-assets/*.m4a
 !.github/
 !.github/workflows/
 !.github/workflows/pages.yml
